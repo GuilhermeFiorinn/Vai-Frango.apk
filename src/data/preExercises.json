@@ -1,0 +1,23 @@
+[
+  {
+    "id": 1,
+    "nome": "Aquecimento Leve",
+    "descricao": "5 minutos para preparar o corpo para o treino.",
+    "exercicios": [
+      { "id": 101, "nome": "Polichinelos", "duracao": "01:00" },
+      { "id": 102, "nome": "Corrida no lugar", "duracao": "02:00" },
+      { "id": 103, "nome": "Rotação de braços", "duracao": "01:00" },
+      { "id": 104, "nome": "Agachamento livre", "duracao": "01:00" }
+    ]
+  },
+  {
+    "id": 2,
+    "nome": "Cardio Rápido",
+    "descricao": "10 minutos para elevar a frequência cardíaca.",
+    "exercicios": [
+      { "id": 201, "nome": "Burpees", "duracao": "03:00" },
+      { "id": 202, "nome": "Pular corda", "duracao": "05:00" },
+      { "id": 203, "nome": "Prancha", "duracao": "02:00" }
+    ]
+  }
+]

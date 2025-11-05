@@ -1,0 +1,7 @@
+{
+  "name": "myAppM",
+  "integrations": {
+    "capacitor": {}
+  },
+  "type": "react-vite"
+}
