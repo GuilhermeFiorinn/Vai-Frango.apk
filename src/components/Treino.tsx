@@ -1,8 +1,7 @@
 "use client";
 import { useState, useEffect } from "react";
-// 1. CORREÇÃO DE TYPO: "exercices" -> "exercises"
+// Import corrigido para o nome atual do arquivo
 import { Exercise, loadEvents, saveEvents } from "../lib/exercices";
-// 2. Importar componentes Ionic
 import {
   IonSpinner,
   IonNote,
@@ -30,13 +29,10 @@ export default function TreinoDoDia() {
   const [carregando, setCarregando] = useState(true);
   const [erro, setErro] = useState<string | null>(null);
   
-  // 3. O useEffect agora usa loadEvents()
   useEffect(() => {
     async function buscarProximoTreino() {
       try {
-        // 4. NÃO USA FETCH: Carrega do Capacitor Filesystem
         const eventos: CalendarEvents = await loadEvents();
-        
         const hoje = new Date();
         const chaveHoje = formatKey(hoje);
         if (eventos[chaveHoje] && eventos[chaveHoje].length > 0) {
@@ -56,7 +52,6 @@ export default function TreinoDoDia() {
         }
       } catch (err) {
         setErro("Não foi possível buscar seu cronograma de treinos.");
-        console.error(err);
       } finally {
         setCarregando(false);
       }
@@ -64,40 +59,34 @@ export default function TreinoDoDia() {
     buscarProximoTreino();
   }, []);
 
-  // 5. handleToggleFinished agora usa saveEvents()
   async function handleToggleFinished(exercicioIndex: number) {
     if (!treino || !dataDoTreino) return;
-
-    const treinoOriginal = treino; // Salva o estado original
-    const novoTreino = JSON.parse(JSON.stringify(treino)); // Copia profunda
+    const treinoOriginal = treino;
+    const novoTreino = JSON.parse(JSON.stringify(treino));
     novoTreino[exercicioIndex].finished = !novoTreino[exercicioIndex].finished;
-    
-    setTreino(novoTreino); // 1. Atualização otimista da UI
-
+    setTreino(novoTreino);
     try {
-      // 2. Salva no "banco de dados" (o JSON no dispositivo)
       const dateKey = formatKey(dataDoTreino);
-      const allEvents = await loadEvents(); // Carrega o JSON inteiro
-      allEvents[dateKey] = novoTreino;      // Atualiza só o dia relevante
-      await saveEvents(allEvents);         // Salva o JSON inteiro de volta
+      const allEvents = await loadEvents();
+      allEvents[dateKey] = novoTreino;
+      await saveEvents(allEvents);
     } catch (error) {
-      console.error("Falha ao salvar o progresso:", error);
-      setTreino(treinoOriginal); // 3. Reverte a UI em caso de falha
+      setTreino(treinoOriginal);
       alert("Não foi possível salvar seu progresso. Tente novamente.");
     }
   }
 
-  // 6. Refatorado com componentes Ionic
+  // --- Renderização ---
   if (carregando) {
     return (
-      <div className="w-full flex justify-center p-10">
+      <div style={{display: 'flex', justifyContent: 'center', padding: '40px'}}>
         <IonSpinner name="crescent" />
       </div>
     );
   }
   if (erro) {
     return (
-      <div className="text-center p-10">
+      <div style={{textAlign: 'center', padding: '40px'}}>
         <IonNote color="danger">{erro}</IonNote>
       </div>
     );
@@ -106,7 +95,7 @@ export default function TreinoDoDia() {
     return (
       <IonCard>
         <IonCardHeader>
-          <IonCardTitle>Tudo pronto para começar?</IonCardTitle>
+          <IonCardTitle style={{color: '#E6E6E6'}}>Tudo pronto para começar?</IonCardTitle>
         </IonCardHeader>
         <IonCardContent>
           Você ainda não agendou nenhum treino. Vá para a aba "Agenda" para planejar sua semana!
@@ -119,30 +108,31 @@ export default function TreinoDoDia() {
   const exerciciosConcluidos = treino.filter(ex => ex.finished).length;
   const ehHoje = formatKey(dataDoTreino) === formatKey(new Date());
   const titulo = ehHoje ? "Treino de Hoje" : "Próximo Treino";
-  const previewExercicios = treino.slice(0, 3);
 
-  // 7. Usando IonAccordionGroup e IonAccordion
   return (
-    /* --- CORREÇÃO ---
-     * Removemos "max-w-3xl mx-auto".
-     * A Página agora cuida do padding.
-    */
-    <div className="ml-4 w-full">
-      <h1 style={{marginLeft: '10px'}}>
+    <div style={{ marginBottom: '2rem' }}> 
+      
+      <IonCardTitle style={{
+        textAlign: 'center', 
+        marginBottom: '1.5rem', 
+        fontSize: '2rem', 
+        fontWeight: 'bold',
+        color: '#E6E6E6' // Cor do texto principal
+      }}>
         Treino do Dia
-      </h1>
+      </IonCardTitle>
+      
       <IonAccordionGroup>
-        <IonAccordion value="treinoDoDia" className="shadow-xl rounded-lg border border-gray-200 dark:border-gray-700">
+        <IonAccordion value="treinoDoDia">
           <IonItem slot="header" lines="none">
             <IonLabel>
-              <h2 className="text-2xl font-bold">{titulo}</h2>
-              <p className="text-md text-gray-500 dark:text-gray-400 pt-4">
+              <h2>{titulo}</h2>
+              <IonNote>
                 Progresso: {exerciciosConcluidos}/{totalExercicios}
-              </p>
+              </IonNote>
             </IonLabel>
           </IonItem>
           
-          {/* Conteúdo do Accordion (o que é mostrado ao expandir) */}
           <div className="ion-padding" slot="content">
             <IonList lines="full">
               {treino.map((exercicio, index) => (
@@ -151,15 +141,14 @@ export default function TreinoDoDia() {
                     slot="start"
                     checked={exercicio.finished}
                     onIonChange={() => handleToggleFinished(index)}
-                    aria-label={`Marcar ${exercicio.name} como concluído`}
                   />
-                  <IonLabel 
-                    className={`${exercicio.finished ? 'line-through text-gray-500' : ''}`}
-                  >
-                    <div className="flex justify-between items-center">
-                      <h3 className="text-lg font-semibold">{exercicio.name}</h3>
+                  <IonLabel color={exercicio.finished ? 'medium' : ''}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                      <h3>{exercicio.name}</h3>
                       {exercicio.duration && (
-                        <p className="text-sm font-mono">{exercicio.duration}</p>
+                        <IonNote slot="end" style={{fontFamily: 'monospace'}}>
+                          {exercicio.duration}
+                        </IonNote>
                       )}
                     </div>
                   </IonLabel>

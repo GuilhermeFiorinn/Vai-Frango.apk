@@ -1,8 +1,7 @@
 "use client";
-import { useState, useEffect } from "react";
-// 1. Importar o JSON diretamente
+import { useState } from "react";
 import presetsData from "../data/preExercises.json";
-// 2. Importar componentes Ionic
+
 import {
   IonCard,
   IonCardHeader,
@@ -16,28 +15,31 @@ import {
   IonNote,
 } from "@ionic/react";
 
-// (Tipos permanecem os mesmos)
+
 type ExercicioRapido = { id: number; nome: string; duracao: string; };
 type PresetDeTreino = { id: number; nome: string; descricao?: string; exercicios: ExercicioRapido[]; };
 
-// --- Sub-componente: Seleção de Preset (Ionic-ficado) ---
+// --- Sub-componente: Seleção de Preset ---
 function SelecaoDePreset({ presets, onSelecionar }: { presets: PresetDeTreino[], onSelecionar: (preset: PresetDeTreino) => void }) {
   return (
     <IonCard>
       <IonCardHeader>
-        <IonCardTitle className="text-2xl">Escolha um Treino Rápido</IonCardTitle>
+        <IonCardTitle style={{ color: '#E6E6E6' }}>Escolha um Treino Rápido</IonCardTitle>  {/* Forçar cor de texto com style, n sei porque nao funciona com o css*/}
+
       </IonCardHeader>
       <IonCardContent>
         <IonList lines="full" inset={true}>
           {presets.map((preset) => (
-            <IonItem 
+            <IonItem
               button={true}
               key={preset.id}
               onClick={() => onSelecionar(preset)}
             >
               <IonLabel>
-                <h2 className="font-bold text-lg">{preset.nome}</h2>
-                {preset.descricao && <p className="text-sm">{preset.descricao}</p>}
+                <h2>{preset.nome}</h2>
+                {preset.descricao && (
+                  <IonNote>{preset.descricao}</IonNote>
+                )}
               </IonLabel>
             </IonItem>
           ))}
@@ -47,7 +49,7 @@ function SelecaoDePreset({ presets, onSelecionar }: { presets: PresetDeTreino[],
   );
 }
 
-// --- Sub-componente: Exibição do Treino (Ionic-ficado) ---
+// --- Sub-componente: Exibição do Treino ---
 function ExibicaoDeTreino({ preset, onVoltar }: { preset: PresetDeTreino, onVoltar: () => void }) {
   const [exerciciosConcluidos, setExerciciosConcluidos] = useState<Set<number>>(new Set());
 
@@ -65,7 +67,7 @@ function ExibicaoDeTreino({ preset, onVoltar }: { preset: PresetDeTreino, onVolt
     <IonCard>
       <IonCardHeader>
         <IonItem lines="none" className="ion-no-padding">
-          <IonCardTitle className="text-2xl">{preset.nome}</IonCardTitle>
+          <IonCardTitle style={{ color: '#E6E6E6' }}>{preset.nome}</IonCardTitle> {/* Forçar cor de texto com style*/}
           <IonButton fill="clear" onClick={onVoltar} slot="end">
             Voltar
           </IonButton>
@@ -86,10 +88,12 @@ function ExibicaoDeTreino({ preset, onVoltar }: { preset: PresetDeTreino, onVolt
                     onIonChange={() => handleToggleFinished(ex.id)}
                     aria-label={`Marcar ${ex.nome} como concluído`}
                   />
-                  <IonLabel className={`${isFinished ? 'line-through text-gray-500' : ''}`}>
-                    <div className="flex justify-between items-center">
-                      <h3 className="text-lg font-semibold">{ex.nome}</h3>
-                      <p className="text-sm font-mono">{ex.duracao}</p>
+                  <IonLabel color={isFinished ? 'medium' : ''}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                      <h3>{ex.nome}</h3>
+                      <IonNote slot="end" style={{ fontFamily: 'monospace' }}>
+                        {ex.duracao}
+                      </IonNote>
                     </div>
                   </IonLabel>
                 </IonItem>
@@ -102,27 +106,23 @@ function ExibicaoDeTreino({ preset, onVoltar }: { preset: PresetDeTreino, onVolt
   );
 }
 
-// --- Componente Principal (Ionic-ficado) ---
+// --- Componente Principal ---
 export default function TreinoRapido() {
-  // 3. Carrega os presets do JSON importado, não mais do fetch
   const [presets] = useState<PresetDeTreino[]>(presetsData);
   const [presetSelecionado, setPresetSelecionado] = useState<PresetDeTreino | null>(null);
-  
-  // 4. Estados de carregando e erro removidos
-  // (O useEffect de 'buscarPresets' foi removido)
 
   if (presetSelecionado) {
     return (
-      <ExibicaoDeTreino 
-        preset={presetSelecionado} 
-        onVoltar={() => setPresetSelecionado(null)} 
+      <ExibicaoDeTreino
+        preset={presetSelecionado}
+        onVoltar={() => setPresetSelecionado(null)}
       />
     );
   }
   return (
-    <SelecaoDePreset 
-      presets={presets} 
-      onSelecionar={(preset) => setPresetSelecionado(preset)} 
+    <SelecaoDePreset
+      presets={presets}
+      onSelecionar={(preset) => setPresetSelecionado(preset)}
     />
   );
 }

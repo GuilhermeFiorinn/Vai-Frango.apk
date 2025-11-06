@@ -6,7 +6,7 @@ import {
   removeExercise, 
   loadEvents, 
   saveEvents 
-} from "../lib/exercices";
+} from "../lib/exercices"; // Corrigido de "exercices"
 
 // Importações do Ionic padroes junto com as para data do calendario
 import {
@@ -28,15 +28,18 @@ import {
   IonSelect,
   IonSelectOption,
   IonButtons,
-  IonSpinner
+  IonSpinner,
+  IonNote // Adicionado para substituir <p>
 } from "@ionic/react";
 
 import { close } from "ionicons/icons";
-import presetsData from "../data/exercises.json";
+import presetsData from "../data/exercises.json"; 
 
-// Função utilitária SÓ para formatar a chave YYYY-MM-DD
 function formatKey(d: Date) {
-  return d.toISOString().slice(0, 10);
+  const year = d.getFullYear();
+  const month = (d.getMonth() + 1).toString().padStart(2, '0');
+  const day = d.getDate().toString().padStart(2, '0');
+  return `${year}-${month}-${day}`;
 }
 
 // Tipagem
@@ -50,7 +53,7 @@ export default function Calendar() {
   const [presets] = useState<Preset[]>(presetsData);
   const [isModalOpen, setIsModalOpen] = useState(false);
 
-  // Efeito para CARREGAR os dados do arquivo na primeira renderização
+  // ... (useEffect de carregar e salvar estão corretos) ...
   useEffect(() => {
     async function loadData() {
       const data = await loadEvents();
@@ -58,44 +61,38 @@ export default function Calendar() {
       setLoading(false);
     }
     loadData();
-  }, []); // [] = roda só uma vez
+  }, []);
 
-  // Efeito para SALVAR os dados no arquivo sempre que 'events' mudar
   useEffect(() => {
-    // Não salva se estivermos no estado de carregamento inicial
     if (!loading) {
       saveEvents(events);
     }
-  }, [events, loading]); // Roda sempre que 'events' ou 'loading' mudar
+  }, [events, loading]);
 
-  // 'useMemo' para MARCAR os dias no calendário
+  // ... (useMemo de highlightedDates está correto) ...
   const highlightedDates = useMemo(() => {
     return Object.keys(events)
       .filter(key => events[key] && events[key].length > 0)
       .map(dateKey => {
         return {
-          date: dateKey, // 'YYYY-MM-DD'
-          textColor: "#DB8237", // Cor da fonte
-          backgroundColor: "#fef0e7", // Fundo do dia
+          date: dateKey,
+          textColor: "#DB8237",
+          backgroundColor: "#fef0e7",
         };
       });
   }, [events]);
 
-  // Função para quando o usuário CLICA em um dia
+  // ... (Funções handleDayClick, Modais, add/remove estão corretas) ...
   function handleDayClick(isoDateString: string | string[] | null | undefined) {
     if (!isoDateString || typeof isoDateString !== 'string') return;
-    
     const date = new Date(isoDateString);
-    const key = formatKey(date);
-    
+    const key = formatKey(date); // Usando a nova função formatKey
     if (selected && formatKey(selected) === key) {
-      setSelected(null); // Des-seleciona se clicar de novo
+      setSelected(null);
     } else {
       setSelected(date);
     }
   }
-
-  // Funções do Modal
   function openAddModalForSelected() {
     if (!selected) return;
     setIsModalOpen(true);
@@ -104,43 +101,43 @@ export default function Calendar() {
   function closeModal() {
     setIsModalOpen(false);
   }
-
-  // Funções de Eventos
   function addExerciseFor(date: Date, presetId: number) {
     const preset = presets.find(p => p.id === presetId);
     if (!preset) return;
-    const key = formatKey(date);
+    const key = formatKey(date); // Usando a nova função formatKey
     const duration = preset.duracaoMinutos ? `${preset.duracaoMinutos} min` : "";
-    
-    // Atualiza o estado (o useEffect vai salvar)
     setEvents(prev => addExercise(prev, key, { name: preset.nome, duration, finished: false }));
-    
     setNewExerciseName("");
-    closeModal(); // Fecha o modal após adicionar
+    closeModal();
   }
-
   function removeEvent(dateKey: string, index: number) {
-    // Atualiza o estado (o useEffect vai salvar)
     setEvents(prev => removeExercise(prev, dateKey, index));
   }
     
-  // Lista de dias ordenados para a "Agenda de Treinos"
   const scheduledDays = Object.keys(events)
     .filter(key => events[key] && events[key].length > 0)
     .sort();
   
-  // Renderiza um spinner enquanto os dados são carregados do arquivo
+  // Renderiza um spinner...
   if (loading) {
     return (
-      <div className="w-full flex justify-center items-center p-20">
+      <div style={{display: 'flex', justifyContent: 'center', alignItems: 'center', padding: '80px'}}>
         <IonSpinner name="crescent" />
       </div>
     );
   }
 
-  // Renderização principal após o carregamento
+  // Renderização principal
   return (
     <>
+      <style>
+        {`
+          ion-datetime::part(calendar) {
+            background: #322B28; 
+          }
+        `}
+      </style>
+
       {/* 1. O CALENDÁRIO NATIVO */}
       <IonDatetime
         presentation="date"
@@ -150,41 +147,66 @@ export default function Calendar() {
         firstDayOfWeek={0} // 0 = Domingo
       />
       
-      {/* 2. BOTÃO DE ADICIONAR (só aparece se um dia estiver selecionado) */}
+      {/* --- MUDANÇA: TEXTO INSTRUCIONAL --- */}
+      <IonNote style={{
+        color: '#9E9D9D', // Sua cor de sub-texto
+        textAlign: 'center',
+        display: 'block',
+        marginTop: '10px'
+      }}>
+        Clique em um dia para marcar um Exercício
+      </IonNote>
+      
+      {/* 2. BOTÃO DE ADICIONAR */}
       {selected && (
         <IonButton 
           expand="block" 
           onClick={openAddModalForSelected}
-          className="ion-margin-top ion-margin-horizontal"
+          style={{marginTop: '16px', marginLeft: '16px', marginRight: '16px'}}
         >
           Adicionar Treino para {selected.toLocaleDateString("pt-BR", { day: '2-digit', month: 'short' })}
         </IonButton>
       )}
 
       {/* 3. A LISTA "AGENDA DE TREINOS" */}
-      <div className="ion-padding-top">
-        <h2 className="text-lg font-bold ion-padding-horizontal">Agenda de Treinos</h2>
+      <div style={{paddingTop: '16px'}}>
+        <h2 style={{
+            color: '#E6E6E6', 
+            fontSize: '1.25rem', 
+            fontWeight: 'bold', 
+            paddingLeft: '16px', 
+            paddingRight: '16px',
+            marginBottom: '10px'
+        }}>
+          Agenda de Treinos
+        </h2>
+        
         {scheduledDays.length === 0 && (
-          <p className="ion-padding-horizontal text-gray-500">Nenhum exercício agendado.</p>
+          <IonNote style={{paddingLeft: '16px', paddingRight: '16px'}}>
+            Nenhum exercício agendado.
+          </IonNote>
         )}
-        <IonList inset={true} lines="none" className="ion-no-padding">
+        
+        <IonList inset={true} lines="none" style={{padding: 0}}>
           {scheduledDays.map(dateKey => {
-            const date = new Date(dateKey + 'T12:00:00Z'); // T12:00:00Z para evitar bugs de fuso
+            const date = new Date(dateKey + 'T12:00:00Z');
             const exercisesForDay = events[dateKey];
             return (
-              <IonCard key={dateKey} className="ion-margin-bottom">
+              <IonCard key={dateKey} style={{marginBottom: '16px'}}>
                 <IonCardHeader>
-                  <IonCardTitle className="font-semibold text-base text-[#DB8237]">
+                  <IonCardTitle style={{fontWeight: '600', fontSize: '1rem', color: '#DB8237'}}>
                     {date.toLocaleDateString("pt-BR", { weekday: 'long', day: '2-digit', month: 'long' })}
                   </IonCardTitle>
                 </IonCardHeader>
-                <IonCardContent className="ion-no-padding">
+                <IonCardContent style={{padding: 0}}>
                   {exercisesForDay.map((exercise, index) => (
                     <IonItem key={index} lines={index === exercisesForDay.length - 1 ? "none" : "inset"}>
                       <IonLabel>
-                        <h3>{exercise.name}</h3>
-                        {exercise.duration && <p>{exercise.duration}</p>}
-                        Sair
+                        {/* --- MUDANÇA: COR DO TEXTO DA LISTA --- */}
+                        <h3 style={{color: '#E6E6E6'}}>{exercise.name}</h3>
+                        {exercise.duration && (
+                          <p style={{color: '#9E9D9D'}}>{exercise.duration}</p>
+                        )}
                       </IonLabel>
                       <IonButton fill="clear" color="danger" size="small" onClick={() => removeEvent(dateKey, index)} >
                         Remover
@@ -211,31 +233,36 @@ export default function Calendar() {
           </IonToolbar>
         </IonHeader>
         <IonContent className="ion-padding">
-            <div className="space-y-3">
-              <div className="text-lg font-medium">Adicionar exercício</div>
-              <IonItem>
-                <IonLabel position="stacked">Exercício</IonLabel>
-                <IonSelect
-                  value={newExerciseName}
-                  placeholder="Selecione um exercício"
-                  onIonChange={(e) => setNewExerciseName(e.target.value)}
-                >
-                  {presets.map(p => (
-                    <IonSelectOption key={p.id} value={String(p.id)}>
-                      {p.nome} {p.duracaoMinutos ? `(${p.duracaoMinutos} min)` : ""}
-                    </IonSelectOption>
-                  ))}
-                </IonSelect>
-              </IonItem>
-              <IonButton 
-                expand="block" 
-                onClick={() => { if (!selected) return; addExerciseFor(selected, Number(newExerciseName)); }}
-                disabled={!newExerciseName}
-                className="mt-4"
+            <h3 style={{
+                color: '#E6E6E6', 
+                fontSize: '1.25rem', 
+                fontWeight: '500', 
+                marginBottom: '12px'
+            }}>
+              Adicionar exercício
+            </h3>
+            <IonItem>
+              <IonLabel position="stacked">Exercício</IonLabel>
+              <IonSelect
+                value={newExerciseName}
+                placeholder="Selecione um exercício"
+                onIonChange={(e) => setNewExerciseName(e.target.value)}
               >
-                Adicionar
-              </IonButton>
-            </div>
+                {presets.map(p => (
+                  <IonSelectOption key={p.id} value={String(p.id)}>
+                    {p.nome} {p.duracaoMinutos ? `(${p.duracaoMinutos} min)` : ""}
+                  </IonSelectOption>
+                ))}
+              </IonSelect>
+            </IonItem>
+            <IonButton 
+              expand="block" 
+              onClick={() => { if (!selected) return; addExerciseFor(selected, Number(newExerciseName)); }}
+              disabled={!newExerciseName}
+              style={{marginTop: '16px'}}
+            >
+              Adicionar
+            </IonButton>
         </IonContent>
       </IonModal>
     </>

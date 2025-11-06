@@ -8,6 +8,7 @@ import {
 
 import Profile from "../components/Perfil";
 import AppBanner from "../components/AppBanner";
+import profileData from "../data/perfil.json";
 
 const PerfilPage: React.FC = () => {
 	return (
@@ -15,8 +16,6 @@ const PerfilPage: React.FC = () => {
 			<IonHeader>
 				<AppBanner /> {/* Só o banner */}
 			</IonHeader>
-
-			{/* --- CORREÇÃO: Adicionado 'className="ion-padding"' --- */}
 			<IonContent fullscreen className="ion-padding">
 				<IonHeader collapse="condense">
 					<IonToolbar>

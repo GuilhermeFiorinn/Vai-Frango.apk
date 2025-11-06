@@ -1,2 +1,29 @@
-/* For information on how to create your own theme, please see:
-http://ionicframework.com/docs/theming/ */
+
+body.dark {
+  --ion-background-color: #201A17;
+  --ion-background-color-rgb: 32, 26, 23;
+
+  --ion-toolbar-background: #322B28;
+  --ion-card-background: #322B28;
+  --ion-item-background: #322B28; /* Fundo de listas e itens */
+
+  --ion-text-color: #9E9D9D;
+  --ion-text-color-rgb: 158, 157, 157; /* Cor do texto padrão */
+  --ion-toolbar-color: #E6E6E6; /* Cor do texto no Header, Footer, TabBar, etc. */
+
+  --ion-color-medium: #9E9D9D;
+  --ion-color-medium-rgb: 158, 157, 157; /* Cor do texto secundário */
+
+  --ion-border-color: #4a4441; /* Cores de borda (para divisores de lista, etc.) */
+
+  /* Cor do Título Grande (ex: "Agenda", "Perfil" quando encolhido) */
+  --ion-toolbar-color: #F0EBE8;
+
+  /* Cores de destaque (botões, links, etc.) */
+  --ion-color-primary: #F89839; /* Usando seu laranja do banner como cor primária */
+  --ion-color-primary-rgb: 248, 152, 57;
+  --ion-color-primary-contrast: #000000;
+  --ion-color-primary-contrast-rgb: 0, 0, 0;
+  --ion-color-primary-shade: #da8532;
+  --ion-color-primary-tint: #f9a14d;
+}
